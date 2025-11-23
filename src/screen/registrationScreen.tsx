@@ -1,5 +1,14 @@
 import React, { useState, useContext } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Alert, Switch } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Switch,
+  SafeAreaView,
+  StyleSheet,
+} from "react-native";
+import Toast from "react-native-simple-toast";
 import InputField from "../components/inputField";
 import Dropdown from "../components/dropdown";
 import styles from "../styles/formatStyles";
@@ -31,130 +40,146 @@ const initialForm: FormState = {
 
 export default function RegistrationScreen() {
   const [form, setForm] = useState<FormState>(initialForm);
-  const [errorMessage, setErrorMessage] = useState<string>("");
-
-  // THEME CONTEXT USED INSIDE COMPONENT ✔
+  const [errors, setErrors] = useState<{ [K in keyof FormState]?: boolean }>({});
   const { theme, mode, toggleTheme } = useContext(ThemeContext);
 
   const handleChange = (field: keyof FormState, value: string) => {
     setForm({ ...form, [field]: value });
+    setErrors({ ...errors, [field]: false });
   };
 
   const validateForm = () => {
-    if (!form.firstName.trim()) return "First name is required";
-    if (!form.lastName.trim()) return "Last name is required";
-    if (!form.gender) return "Gender selection is required";
-    if (!form.maritalStatus) return "Marital status is required";
-    if (!form.age.trim() || isNaN(Number(form.age))) return "Valid age is required";
-    if (!form.dob.trim()) return "Date of birth is required";
-    if (!form.bankBranch.trim()) return "Bank branch name is required";
-    if (!form.accountNo.trim() || form.accountNo.length < 6)
-      return "Valid account number is required";
-    if (!form.scheme) return "Scheme selection is required";
+    const newErrors: { [K in keyof FormState]?: boolean } = {};
 
-    return "";
+    Object.entries(form).forEach(([key, value]) => {
+      if (!value.trim()) newErrors[key as keyof FormState] = true;
+    });
+
+    if (form.age && isNaN(Number(form.age))) newErrors.age = true;
+    if (form.accountNo && form.accountNo.length < 6) newErrors.accountNo = true;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
-    const error = validateForm();
-
-    if (error) {
-      setErrorMessage(error);
+    const valid = validateForm();
+    if (!valid) {
+      Toast.show("Please fill all required fields", Toast.LONG);
       return;
     }
 
-    setErrorMessage("");
+    Toast.show("Form Submitted!", Toast.SHORT);
+    console.log(JSON.stringify(form, null, 2));
 
-    Alert.alert("Form Submitted Successfully", JSON.stringify(form, null, 2));
-
-    setForm(initialForm); // reset form
+    setForm(initialForm);
+    setErrors({});
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* THEME TOGGLE SWITCH */}
-      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
-        <Text style={{ color: theme.text, marginRight: 8, fontSize: 16 }}>
-          {mode === "light" ? "Light Mode" : "Dark Mode"}
-        </Text>
-        <Switch value={mode === "dark"} onValueChange={toggleTheme} />
-      </View>
+    <SafeAreaView style={[local.container, { backgroundColor: theme.background }]}>
+      <ScrollView style={styles.container}>
+        <View style={local.themeRow}>
+          <Text style={[local.themeText, { color: theme.text }]}>
+            {mode === "light" ? "Light Mode" : "Dark Mode"}
+          </Text>
+          <Switch value={mode === "dark"} onValueChange={toggleTheme} />
+        </View>
 
-      <Text style={[styles.title, { color: theme.text }]}>Bank Registration Form</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Bank Registration Form</Text>
 
-      {errorMessage ? (
-        <Text style={{ color: "red", marginBottom: 12, fontSize: 14 }}>{errorMessage}</Text>
-      ) : null}
+        <InputField
+          label="First Name"
+          value={form.firstName}
+          placeholder="Enter first name"
+          error={errors.firstName}
+          onChangeText={(t) => handleChange("firstName", t)}
+        />
 
-      <InputField
-        label="First Name"
-        value={form.firstName}
-        placeholder="Enter first name"
-        onChangeText={(t) => handleChange("firstName", t)}
-      />
+        <InputField
+          label="Last Name"
+          value={form.lastName}
+          placeholder="Enter last name"
+          error={errors.lastName}
+          onChangeText={(t) => handleChange("lastName", t)}
+        />
 
-      <InputField
-        label="Last Name"
-        value={form.lastName}
-        placeholder="Enter last name"
-        onChangeText={(t) => handleChange("lastName", t)}
-      />
+        <Dropdown
+          label="Gender"
+          selectedValue={form.gender}
+          options={["Male", "Female", "Other"]}
+          error={errors.gender}
+          onValueChange={(v) => handleChange("gender", v)}
+        />
 
-      <Dropdown
-        label="Gender"
-        selectedValue={form.gender}
-        onValueChange={(v) => handleChange("gender", v)}
-        options={["Male", "Female", "Other"]}
-      />
+        <Dropdown
+          label="Marital Status"
+          selectedValue={form.maritalStatus}
+          options={["Married", "Unmarried"]}
+          error={errors.maritalStatus}
+          onValueChange={(v) => handleChange("maritalStatus", v)}
+        />
 
-      <Dropdown
-        label="Marital Status"
-        selectedValue={form.maritalStatus}
-        onValueChange={(v) => handleChange("maritalStatus", v)}
-        options={["Married", "Unmarried"]}
-      />
+        <InputField
+          label="Age"
+          value={form.age}
+          placeholder="Enter age"
+          error={errors.age}
+          onChangeText={(t) => handleChange("age", t)}
+        />
 
-      <InputField
-        label="Age"
-        value={form.age}
-        placeholder="Enter age"
-        onChangeText={(t) => handleChange("age", t)}
-      />
+        <InputField
+          label="Date of Birth"
+          value={form.dob}
+          placeholder="YYYY-MM-DD"
+          error={errors.dob}
+          onChangeText={(t) => handleChange("dob", t)}
+        />
 
-      <InputField
-        label="Date of Birth"
-        value={form.dob}
-        placeholder="YYYY-MM-DD"
-        onChangeText={(t) => handleChange("dob", t)}
-      />
+        <InputField
+          label="Bank Branch Name"
+          value={form.bankBranch}
+          placeholder="Enter branch name"
+          error={errors.bankBranch}
+          onChangeText={(t) => handleChange("bankBranch", t)}
+        />
 
-      <InputField
-        label="Bank Branch Name"
-        value={form.bankBranch}
-        placeholder="Enter branch name"
-        onChangeText={(t) => handleChange("bankBranch", t)}
-      />
+        <InputField
+          label="Account Number"
+          value={form.accountNo}
+          placeholder="Enter account number"
+          error={errors.accountNo}
+          onChangeText={(t) => handleChange("accountNo", t)}
+        />
 
-      <InputField
-        label="Account Number"
-        value={form.accountNo}
-        placeholder="Enter account number"
-        onChangeText={(t) => handleChange("accountNo", t)}
-      />
+        <Dropdown
+          label="Scheme Selection"
+          selectedValue={form.scheme}
+          options={[
+            "Savings Account",
+            "Current Account",
+            "Fixed Deposit",
+            "Recurring Deposit",
+          ]}
+          error={errors.scheme}
+          onValueChange={(v) => handleChange("scheme", v)}
+        />
 
-      <Dropdown
-        label="Scheme Selection"
-        selectedValue={form.scheme}
-        onValueChange={(v) => handleChange("scheme", v)}
-        options={["Savings Account", "Current Account", "Fixed Deposit", "Recurring Deposit"]}
-      />
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: theme.buttonBackground }]}
+          onPress={handleSubmit}
+        >
+          <Text style={[styles.buttonText, { color: theme.buttonText }]}>Submit</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.button, { backgroundColor: theme.buttonBackground }]}
-        onPress={handleSubmit}
-      >
-        <Text style={[styles.buttonText, { color: theme.buttonText }]}>Submit</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <View style={{ height: 30 }} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
+
+const local = StyleSheet.create({
+  container: { flex: 1 },
+  themeRow: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  themeText: { marginRight: 8, fontSize: 16 },
+});

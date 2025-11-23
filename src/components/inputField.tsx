@@ -7,6 +7,7 @@ interface InputFieldProps {
   value: string;
   placeholder?: string;
   onChangeText: (value: string) => void;
+  error?: boolean;
 }
 
 export default function InputField({
@@ -14,18 +15,19 @@ export default function InputField({
   value,
   placeholder,
   onChangeText,
+  error = false,
 }: InputFieldProps) {
   const { theme } = useContext(ThemeContext);
 
   return (
-    <View style={{ marginBottom: 12 }}>
+    <View style={styles.container}>
       <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
       <TextInput
         style={[
           styles.input,
           {
             backgroundColor: theme.inputBackground,
-            borderColor: theme.border,
+            borderColor: error ? "red" : theme.border,
             color: theme.text,
           },
         ]}
@@ -39,10 +41,7 @@ export default function InputField({
 }
 
 const styles = StyleSheet.create({
+  container: { marginBottom: 14 },
   label: { fontSize: 14, marginBottom: 4 },
-  input: {
-    borderWidth: 1,
-    borderRadius: 6,
-    padding: 10,
-  },
+  input: { borderWidth: 1, borderRadius: 6, padding: 10 },
 });

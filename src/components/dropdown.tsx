@@ -8,6 +8,7 @@ interface DropdownProps {
   selectedValue: string;
   onValueChange: (value: string) => void;
   options: string[];
+  error?: boolean;
 }
 
 export default function Dropdown({
@@ -15,17 +16,21 @@ export default function Dropdown({
   selectedValue,
   onValueChange,
   options,
+  error = false,
 }: DropdownProps) {
   const { theme } = useContext(ThemeContext);
 
   return (
-    <View style={{ marginBottom: 12 }}>
+    <View style={styles.container}>
       <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
 
       <View
         style={[
-          styles.pickerWrapper,
-          { backgroundColor: theme.inputBackground, borderColor: theme.border },
+          styles.wrapper,
+          {
+            backgroundColor: theme.inputBackground,
+            borderColor: error ? "red" : theme.border,
+          },
         ]}
       >
         <Picker
@@ -34,8 +39,12 @@ export default function Dropdown({
           dropdownIconColor={theme.text}
           style={{ color: theme.text }}
         >
+          <Picker.Item label="Select..." value="" />
+
           {options.map((opt, idx) => (
-            <Picker.Item key={idx} label={opt} value={opt} />
+            <React.Fragment key={idx}>
+              <Picker.Item label={opt} value={opt} />
+            </React.Fragment>
           ))}
         </Picker>
       </View>
@@ -44,9 +53,8 @@ export default function Dropdown({
 }
 
 const styles = StyleSheet.create({
+  container: { marginBottom: 14 },
   label: { fontSize: 14, marginBottom: 4 },
-  pickerWrapper: {
-    borderWidth: 1,
-    borderRadius: 6,
-  },
+  wrapper: { borderWidth: 1, borderRadius: 6 },
 });
+
