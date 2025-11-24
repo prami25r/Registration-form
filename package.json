@@ -12,8 +12,10 @@
   "dependencies": {
     "@react-native-picker/picker": "^2.11.4",
     "@react-native/new-app-screen": "0.82.1",
+    "i": "^0.3.7",
     "react": "19.1.1",
     "react-native": "0.82.1",
+    "react-native-fs": "^2.20.0",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-simple-toast": "^3.3.2"
   },

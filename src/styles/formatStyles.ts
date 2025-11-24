@@ -16,15 +16,15 @@ export default StyleSheet.create({
     flex: 1,
   },
   button: {
-    marginTop: 20,
-    backgroundColor: "#0066CC",
-    padding: 14,
+    paddingVertical: 15,
+    paddingHorizontal: 12,
     borderRadius: 6,
+    alignItems: "center",
   },
   buttonText: {
-    textAlign: "center",
-    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-  }
+    textAlign: "center",
+    color: "#fff",
+  },
 });

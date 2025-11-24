@@ -42,9 +42,7 @@ export default function Dropdown({
           <Picker.Item label="Select..." value="" />
 
           {options.map((opt, idx) => (
-            <React.Fragment key={idx}>
-              <Picker.Item label={opt} value={opt} />
-            </React.Fragment>
+            <Picker.Item key={idx} label={opt} value={opt} />
           ))}
         </Picker>
       </View>
